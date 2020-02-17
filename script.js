@@ -1,193 +1,129 @@
-function I(id) {
-  return document.getElementById(id);
-}
-const meterBk = "#E0E0E0";
-const dlColor = "#6060AA";
-const ulColor = "#309030";
-const pingColor = "#AA6060";
-const jitColor = "#AA6060";
-const progColor = "#EEEEEE";
+const delay = 2000;
+let value = 0;
+let valueStore = 0;
+let tick = 1;
+let tickStore = 1;
+let tickDiff = 0;
+let tickDiffValue = 0;
 
-//CODE FOR GAUGES
-function drawMeter(c, amount, bk, fg, progress, prog) {
-  const ctx = c.getContext("2d");
-  const dp = window.devicePixelRatio || 1;
-  const cw = c.clientWidth * dp;
-  const ch = c.clientHeight * dp;
-  const sizScale = ch * 0.0055;
-  if (c.width == cw && c.height == ch) {
-    ctx.clearRect(0, 0, cw, ch);
-  } else {
-    c.width = cw;
-    c.height = ch;
-  }
-  ctx.beginPath();
-  ctx.strokeStyle = bk;
-  ctx.lineWidth = 16 * sizScale;
-  ctx.arc(
-    c.width / 2,
-    c.height - 58 * sizScale,
-    c.height / 1.8 - ctx.lineWidth,
-    -Math.PI * 1.1,
-    Math.PI * 0.1
-  );
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.strokeStyle = fg;
-  ctx.lineWidth = 16 * sizScale;
-  ctx.arc(
-    c.width / 2,
-    c.height - 58 * sizScale,
-    c.height / 1.8 - ctx.lineWidth,
-    -Math.PI * 1.1,
-    amount * Math.PI * 1.2 - Math.PI * 1.1
-  );
-  ctx.stroke();
-  if (typeof progress !== "undefined") {
-    ctx.fillStyle = prog;
-    ctx.fillRect(
-      c.width * 0.3,
-      c.height - 16 * sizScale,
-      c.width * 0.4 * progress,
-      4 * sizScale
-    );
-  }
-}
+valBetween = (v, min, max) => Math.min(max, Math.max(min, v));
 
-function mbpsToAmount(s) {
-  return 1 - 1 / 1.3 ** Math.sqrt(s);
-}
+(function loop() {
+	if(navigator.onLine) {
+	value = Math.ceil(Math.random() * 100);
+	}
+	else {
+		value=0;
+	}
+	tick = valBetween(Math.ceil((value / 100) * 28), 1, 28);
+	tickDiff = Math.abs(tick - tickStore);
+	tickDiffValue = Math.abs(value - valueStore) / tickDiff;
 
-function msToAmount(s) {
-  return 1 - 1 / 1.08 ** Math.sqrt(s);
-}
+	// console.log(
+	// 	"tickDiff: " +
+	// 		tickDiffValue +
+	// 		" * " +
+	// 		tickDiff +
+	// 		" = " +
+	// 		tickDiffValue * tickDiff
+	// );
+	let counter = 0;
 
-//SPEEDTEST AND UI CODE
-let w = null; //speedtest worker
-let data = null; //data from worker
-const testParameters = {
-  telemetry_level: "basic"
-  //Optional: add more test parameters here
-};
+	const valueStoreTemp = valueStore;
+	const tickStoreTemp = tickStore;
+	if (value > valueStore) {
+		for (i = tickStoreTemp; i <= tick; i++) {
+			(i => {
+				setTimeout(() => {
+					document.querySelector(
+						".speedtest-container"
+					).style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.25) 50%, transparent 50%), linear-gradient(${
+						$(`#gauge path:nth-child(${i})`)[0].style.fill
+					}, ${
+						$(`#gauge path:nth-child(${i})`)[0].style.fill
+					} 50%, rgba(255, 255, 255, 0) 50%)`;
+					document.getElementById(
+						"gauge"
+					).style.boxShadow = `0 0 32px rgba(21, 55, 172, 0.25), inset 0 -192px 192px -240px ${
+						$(`#gauge path:nth-child(${i})`)[0].style.fill
+					}, inset 0 0 2px -1px ${$(`#gauge path:nth-child(${i})`)[0].style.fill}`;
+					$(`#gauge path:nth-child(${i})`).show();
+					$("#gauge-label")
+						.css("color", $(`#gauge path:nth-child(${i})`)[0].style.fill)
+						.text(
+							Math.ceil(valueStoreTemp + tickDiffValue * Math.abs(tickStoreTemp - i))
+						);
+					if (i == tick) {
+						$("#gauge-label").text(value);
+					}
+					// console.log(i);
+				}, 50 * counter);
+				counter++;
+			})(i);
+		}
+	} else if (value < valueStore) {
+		for (i = tickStoreTemp; i >= tick; i--) {
+			(i => {
+				setTimeout(() => {
+					document.querySelector(
+						".speedtest-container"
+					).style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.25) 50%, var(--bg-color) 50%), linear-gradient(${
+						$(`#gauge path:nth-child(${i})`)[0].style.fill
+					}, ${$(`#gauge path:nth-child(${i})`)[0].style.fill} 50%, #fff 50%)`;
+					$("#gauge").css(
+						"box-shadow",
+						`0 0 32px rgba(21, 55, 172, 0.25), inset 0 -192px 192px -240px ${
+							$(`#gauge path:nth-child(${i})`)[0].style.fill
+						}, inset 0 0 2px -1px ${$(`#gauge path:nth-child(${i})`)[0].style.fill}`
+					);
+					$(`#gauge path:nth-child(${i})`).hide();
+					$("#gauge-label")
+						.css("color", $(`#gauge path:nth-child(${i})`)[0].style.fill)
+						.text(
+							Math.floor(valueStoreTemp - tickDiffValue * Math.abs(tickStoreTemp - i))
+						);
+					if (i == tick) {
+						$("#gauge-label").text(value);
+					}
+					// console.log(i);
+				}, 50 * counter);
+				counter++;
+			})(i);
+		}
+	}
+	valueStore = value;
+	tickStore = tick;
+	window.setTimeout(loop, delay);
+})();
 
-function startStop() {
-  if (w != null) {
-    //speedtest is running, abort
-    w.postMessage("abort");
-    w = null;
-    data = null;
-    I("startStopBtn").className = "";
-    initUI();
-  } else {
-    //test is not running, begin
-    w = new Worker("speedtest_worker.min.js");
-    w.postMessage(`start ${JSON.stringify(testParameters)}`);
-    I("startStopBtn").className = "running";
-    I("shareArea").style.display = "none";
-    w.onmessage = e => {
-      data = JSON.parse(e.data);
-      const status = data.testState;
-      if (status >= 4) {
-        //test completed
-        I("startStopBtn").className = "";
-        w = null;
-        updateUI(true);
-        if (status == 4) {
-          //if testId is present, show sharing panel, otherwise do nothing
-          try {
-            const testId = Number(data.testId);
-            if (!isNaN(testId)) {
-              const shareURL = `${window.location.href.substring(
-                0,
-                window.location.href.lastIndexOf("/")
-              )}/results/?id=${testId}`;
-              I("resultsImg").src = shareURL;
-              I("resultsURL").value = shareURL;
-              I("testId").innerHTML = testId;
-              I("shareArea").style.display = "block";
-            }
-          } catch (e) {}
-        }
-      }
-    };
-  }
-}
-//this function reads the data sent back by the worker and updates the UI
-function updateUI(forced) {
-  if (!forced && (!data || !w)) return;
-  const status = data.testState;
-  I("ip").textContent = data.clientIp;
-  I("dlText").textContent =
-    status == 1 && data.dlStatus == 0 ? "..." : data.dlStatus;
-  drawMeter(
-    I("dlMeter"),
-    mbpsToAmount(Number(data.dlStatus * (status == 1 ? oscillate() : 1))),
-    meterBk,
-    dlColor,
-    Number(data.dlProgress),
-    progColor
-  );
-  I("ulText").textContent =
-    status == 3 && data.ulStatus == 0 ? "..." : data.ulStatus;
-  drawMeter(
-    I("ulMeter"),
-    mbpsToAmount(Number(data.ulStatus * (status == 3 ? oscillate() : 1))),
-    meterBk,
-    ulColor,
-    Number(data.ulProgress),
-    progColor
-  );
-  I("pingText").textContent = data.pingStatus;
-  drawMeter(
-    I("pingMeter"),
-    msToAmount(Number(data.pingStatus * (status == 2 ? oscillate() : 1))),
-    meterBk,
-    pingColor,
-    Number(data.pingProgress),
-    progColor
-  );
-  I("jitText").textContent = data.jitterStatus;
-  drawMeter(
-    I("jitMeter"),
-    msToAmount(Number(data.jitterStatus * (status == 2 ? oscillate() : 1))),
-    meterBk,
-    jitColor,
-    Number(data.pingProgress),
-    progColor
-  );
+const toggleSwitch = document.getElementById("checkbox");
+const currentTheme = localStorage.getItem("theme");
+
+if (currentTheme) {
+	document.documentElement.setAttribute("data-theme", currentTheme);
+
+	if (currentTheme === "dark") {
+		toggleSwitch.checked = true;
+	}
 }
 
-function oscillate() {
-  return 1 + 0.02 * Math.sin(Date.now() / 100);
+function switchTheme({ target }) {
+	if (target.checked) {
+		document.documentElement.setAttribute("data-theme", "dark");
+		localStorage.setItem("theme", "dark");
+	} else {
+		document.documentElement.setAttribute("data-theme", "light");
+		localStorage.setItem("theme", "light");
+	}
 }
-//poll the status from the worker (this will call updateUI)
-setInterval(() => {
-  if (w) w.postMessage("status");
-}, 200);
-//update the UI every frame
-window.requestAnimationFrame =
-  window.requestAnimationFrame ||
-  window.webkitRequestAnimationFrame ||
-  window.mozRequestAnimationFrame ||
-  window.msRequestAnimationFrame ||
-  ((callback, element) => {
-    setTimeout(callback, 1000 / 60);
-  });
 
-function frame() {
-  requestAnimationFrame(frame);
-  updateUI();
-}
-frame(); //start frame loop
-//function to (re)initialize UI
-function initUI() {
-  drawMeter(I("dlMeter"), 0, meterBk, dlColor, 0);
-  drawMeter(I("ulMeter"), 0, meterBk, ulColor, 0);
-  drawMeter(I("pingMeter"), 0, meterBk, pingColor, 0);
-  drawMeter(I("jitMeter"), 0, meterBk, jitColor, 0);
-  I("dlText").textContent = "";
-  I("ulText").textContent = "";
-  I("pingText").textContent = "";
-  I("jitText").textContent = "";
-  I("ip").textContent = "";
-}
+toggleSwitch.addEventListener("change", switchTheme, false);
+
+fetch("https://ipapi.co/json/")
+	.then(response => response.json())
+	.then(data => {
+		document.getElementById(
+			"client"
+		).innerHTML = `<span>${data.city}, ${data.region}, ${data.country}</span><span>${data.ip}</span><span>${data.org}</span>`;
+	});
+	
