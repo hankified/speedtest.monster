@@ -134,7 +134,7 @@ body {
   right: 28%;
 }
 
-.row {
+.row, .result {
   display: -webkit-box;
   display: flex;
   -webkit-box-flex: 1;
@@ -144,7 +144,17 @@ body {
   padding: 8px 16px;
   overflow: hidden;
 }
-.row span {
+.row {
+	justify-content: space-between;
+}
+.result {
+  justify-content: space-evenly;
+}
+.row span, .result span {
+	display: inline-flex;
+	flex: 1;
+	align-items: center;
+	justify-content: center;
   margin: 8px;
 }
 .metrics{
@@ -152,8 +162,20 @@ body {
 	font-weight: 800;
 }
 .reading{
-	font-size: 32px;
+	font-size: 46px;
 	font-weight: 800;
+}
+.red {
+	color: #e71837;
+}
+.green {
+	color: #49b675;
+}
+.blue {
+	color: #0e4bef;
+}
+.pink {
+	color: #ff00ff;
 }
 .unit{
 	font-size: 18px;
@@ -228,6 +250,7 @@ input:checked + .slider:before {
   display: flex;
   -webkit-box-align: center;
           align-items: center;
+  flex: 1;
 }
 .footer span {
   margin: 8px;
