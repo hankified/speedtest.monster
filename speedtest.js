@@ -72,8 +72,8 @@ Speedtest.prototype = {
     if (this._state != 0)
       throw "You cannot change the test settings after adding server or starting the test";
     this._settings[parameter] = value;
-    if(parameter === "temeletry_extra"){
-        this._originalExtra=this._settings.telemetry_extra;
+    if (parameter === "temeletry_extra") {
+      this._originalExtra = this._settings.telemetry_extra;
     }
   },
   /**
@@ -103,7 +103,7 @@ Speedtest.prototype = {
     }
   },
   /**
-  * Add a test point (multiple points of test)
+   * Add a test point (multiple points of test)
    * server: the server to be added as an object. Must contain the following elements:
    *  {
    *       name: "User friendly name",
@@ -156,7 +156,8 @@ Speedtest.prototype = {
       if (this._state >= 3)
         throw "You can't select a server while the test is running";
     }
-    if (this._selectServerCalled) throw "selectServer already called"; else this._selectServerCalled=true;
+    if (this._selectServerCalled) throw "selectServer already called";
+    else this._selectServerCalled = true;
     /*this function goes through a list of servers. For each server, the ping is measured, then the server with the function result is called with the best server, or null if all the servers were down.
      */
     var select = function(serverList, result) {
@@ -312,7 +313,7 @@ Speedtest.prototype = {
       200
     );
     if (this._state == 1)
-        throw "When using multiple points of test, you must call selectServer before starting the test";
+      throw "When using multiple points of test, you must call selectServer before starting the test";
     if (this._state == 2) {
       this._settings.url_dl =
         this._selectedServer.server + this._selectedServer.dlURL;
