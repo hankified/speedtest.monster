@@ -11,7 +11,7 @@ valBetween = (v, min, max) => Math.min(max, Math.max(min, v));
 (function loop() {
   if (navigator.onLine) {
     if (isNaN(parseInt(document.getElementById("ulText").innerText))) {
-      value = Math.ceil(Math.random() * 100);
+      value = Math.ceil(Math.random() * 20) + 1;
     } else {
       value = parseInt(document.getElementById("ulText").innerText);
     }
