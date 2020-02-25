@@ -8,10 +8,28 @@ let tickDiffValue = 0;
 
 valBetween = (v, min, max) => Math.min(max, Math.max(min, v));
 
+const mapNumber = (number, in_min, in_max, out_min, out_max) => {
+  return (
+    ((number - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min
+  );
+};
+
 (function loop() {
   if (navigator.onLine) {
     if (isNaN(parseInt(document.getElementById("ulText").innerText))) {
-      value = Math.ceil(Math.random() * 20) + 1;
+      if (isNaN(parseInt(document.getElementById("dlText").innerText))) {
+        value = Math.round(
+          mapNumber(
+            document.getElementById("pingText").innerText,
+            1,
+            1000,
+            1,
+            100
+          )
+        );
+      } else {
+        value = parseInt(document.getElementById("dlText").innerText);
+      }
     } else {
       value = parseInt(document.getElementById("ulText").innerText);
     }
